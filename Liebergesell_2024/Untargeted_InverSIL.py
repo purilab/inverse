@@ -18,7 +18,7 @@ import numpy as np
 import os
 import copy
 
-os.chdir("/Users/tashiliebergesell/Desktop/Puri Lab/Coding/metatlas-3.0.0")  #change file path as needed
+os.chdir("c:/users/mudoe/desktop/hetexp working/metatlas-main")  #change file path as needed
 from metatlas.io import feature_tools as ft
 
 import math
@@ -29,14 +29,14 @@ import glob
 from tqdm import tqdm
 
 #%%files list
-os.chdir("/Users/tashiliebergesell/Desktop/20240814_AWP273_diff trace/0uM Cu, 5uM Fe") #Change path as needed
-samples = glob.glob(os.path.join('AWP273_1213.csv'))  #Rename as needed. 
+os.chdir("c:/users/mudoe/desktop/InverSIL/355") #Change path as needed
+samples = glob.glob(os.path.join('AWP355_1213.csv'))  #Rename as needed. 
 samples = pd.DataFrame(samples)
 samples[0] = samples[0].apply(lambda x: os.path.basename(x).split('_')[0])
 
 #%%calculate unique 12C and 13C features found in each condition
 
-df = pd.read_csv("./AWP273_1213.csv")    
+df = pd.read_csv("./AWP355_1213.csv")    
 df = df.dropna(axis = 1)
 df.columns = pd.Series(['RT','MZ_12C','13'])
 df12 = df[df['MZ_12C'] == (df['MZ_12C'] + df['13'])] #unique 12C features
@@ -100,7 +100,7 @@ print(str(len(combined)) + "Likely 12C/13C pairs")
 #%%load data
 # will need to convert data to .h5 format
 
-os.chdir("/Users/tashiliebergesell/Desktop/20240814_AWP273_diff trace/0uM Cu, 5uM Fe") #Change path as needed
+os.chdir("c:/users/mudoe/desktop/InverSIL/355") #Change path as needed
 data = {}
 data["atlas"] = 0
 data["lcmsrun"] = "AWP273_P1.h5" #placeholder for the file location. Rename if needed. Make sure 13C + 12C-precursor samples are named, P1, P2, P3, etc. 
@@ -244,12 +244,16 @@ for n in range(len(samples)):
             for l in range(len(d)):
                 h12 = d12.loc[d12['label'] == d.iat[l, 0], :]
                 if len(h12) > 0:
-                    d.loc[l, '12'] = float(h12.iat[0, 3])  
+                    d.loc[l, '12'] = float(h12.iat[0, 3]) 
+                    d.loc[l,'mz_centroid'] = float(h12.iat[0,4])
+                    d.loc[l,'rt_peak'] = float(h12.iat[0,5])
 
             for l in range(len(d)):
                 h13 = d13.loc[d13['label'] == d.iat[l, 0], :]
                 if len(h13) > 0:
-                    d.loc[l, '13'] = float(h13.iat[0, 3])  
+                    d.loc[l, '13'] = float(h13.iat[0, 3])
+                    d.loc[l,'mz_centroid'] = float(h13.iat[0,4])
+                    d.loc[l,'rt_peak'] = float(h13.iat[0,5])
 
             d['12m/z'] = combined.iat[i, 3]
             d['13m/z'] = combined.iat[i, 1]
@@ -268,7 +272,7 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 import pickle
 
-with open ("/Users/tashiliebergesell/Desktop/AWP273_choice.pkl", "wb") as file:
+with open ("c:/users/mudoe/desktop/InverSIL/d355/finalchoice2.pkl", "wb") as file:
     pickle.dump(choice, file)
     file.close()
      
@@ -278,14 +282,14 @@ with open ("/Users/tashiliebergesell/Desktop/AWP273_choice.pkl", "wb") as file:
 
 import pickle
     
-with open ("/Users/tashiliebergesell/Desktop/20240814_AWP273_diff trace/0uM Cu, 5uM Fe/AWP273_choice.pkl", "rb") as file:
+with open ("c:/users/mudoe/desktop/InverSIL/d355/finalchoice2.pkl", "rb") as file:
     loaded_dict = pickle.load(file)
     file.close()
 
 #%%Filtering out false positives
     
 import pandas as pd    
-AWP = loaded_dict['AWP273']  # Change name as needed. Needs to be the same name chosen for the individual files. 
+AWP = loaded_dict['AWP355']  # Change name as needed. Needs to be the same name chosen for the individual files. 
 items_to_delete = []  
 
 # Loop through all keys in the AWP dictionary (e.g., P1, P2, P3)
@@ -326,8 +330,8 @@ with open ("/Users/tashiliebergesell/Desktop/AWP273_reduced.pkl", "wb") as file:
 
 data_list = []
 
-for key in ['P1']:
-    for feature_key, feature_df in loaded_dict['AWP273'][key].items():  
+for key in ['P3']:
+    for feature_key, feature_df in loaded_dict['AWP355'][key].items():  
        
         max_12C_intensity = feature_df['12C_intensity'].max()  # Extracts the maximum value from the 12C_intensity column in the current feature_df dataframe
         max_13C_precursor_intensity = feature_df['13C+12C_precursor_intensity'].max()
@@ -357,4 +361,4 @@ combined_data = pd.DataFrame(data_list)
 
 compiled_data = combined_data.sort_values(by=["P", "RT"])
 
-compiled_data.to_csv('/Users/tashiliebergesell/Desktop/compiled data AWP273.csv')
+compiled_data.to_csv('c:/users/mudoe/desktop/InverSIL/d355/P3_3.csv')
